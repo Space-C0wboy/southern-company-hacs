@@ -6,8 +6,8 @@ from datetime import datetime, timedelta, timezone
 import logging
 from typing import Any
 
-import southern_company_api
-from southern_company_api.nicor_account import NicorBillingPeriod, NicorDailyUsage, NicorUsageHistory
+from ._vendor import southern_company_api
+from ._vendor.southern_company_api.nicor_account import NicorBillingPeriod, NicorDailyUsage, NicorUsageHistory
 
 from homeassistant.components.recorder import get_instance
 from homeassistant.components.recorder.models import StatisticData, StatisticMetaData

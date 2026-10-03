@@ -1,16 +1,14 @@
 {
   "domain": "southern_company",
   "name": "Southern Company",
-  "codeowners": ["@Lash-L"],
+  "codeowners": ["@Lash-L", "@Space-C0wboy"],
   "config_flow": true,
   "dependencies": ["recorder"],
-  "documentation": "https://github.com/Lash-L/southern-company-hacs",
+  "documentation": "https://github.com/Space-C0wboy/southern-company-hacs",
   "integration_type": "hub",
-  "issue_tracker": "https://github.com/Lash-L/southern-company-hacs/issues",
-  "loggers": ["southern_company"],
+  "issue_tracker": "https://github.com/Space-C0wboy/southern-company-hacs/issues",
+  "loggers": ["southern_company", "custom_components.southern_company._vendor.southern_company_api"],
   "quality_scale": "bronze",
-  "requirements": [
-    "southern-company-api==0.7.1"
-  ],
-  "version": "1.1.0"
+  "requirements": [],
+  "version": "1.1.0-sc1"
 }

@@ -6,14 +6,14 @@ from collections.abc import Mapping
 import logging
 from typing import Any
 
-from southern_company_api.exceptions import (
+from ._vendor.southern_company_api.exceptions import (
     CantReachSouthernCompany,
     EmailValidationRequired,
     InvalidLogin,
     NoRequestTokenFound,
     NoScTokenFound,
 )
-from southern_company_api.parser import SouthernCompanyAPI
+from ._vendor.southern_company_api.parser import SouthernCompanyAPI
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -69,7 +69,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         account_type = user_input.get(CONF_ACCOUNT_TYPE, ACCOUNT_TYPE_SOUTHERN_COMPANY)
 
         if account_type == ACCOUNT_TYPE_NICOR_GAS:
-            from southern_company_api.nicor_parser import NicorGasAPI  # noqa: PLC0415
+            from ._vendor.southern_company_api.nicor_parser import NicorGasAPI  # noqa: PLC0415
 
             api = NicorGasAPI(
                 user_input[CONF_USERNAME],

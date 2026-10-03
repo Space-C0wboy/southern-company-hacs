@@ -5,13 +5,13 @@ from __future__ import annotations
 import logging
 import time
 
-from southern_company_api.exceptions import (
+from ._vendor.southern_company_api.exceptions import (
     CantReachSouthernCompany,
     InvalidLogin,
     NoRequestTokenFound,
     NoScTokenFound,
 )
-from southern_company_api.parser import SouthernCompanyAPI
+from ._vendor.southern_company_api.parser import SouthernCompanyAPI
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
@@ -57,7 +57,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     account_type = entry.data.get(CONF_ACCOUNT_TYPE, "southern_company")
 
     if account_type == ACCOUNT_TYPE_NICOR_GAS:
-        from southern_company_api.nicor_parser import NicorGasAPI  # noqa: PLC0415
+        from ._vendor.southern_company_api.nicor_parser import NicorGasAPI  # noqa: PLC0415
 
         api: NicorGasAPI = NicorGasAPI(
             entry.data[CONF_USERNAME],
