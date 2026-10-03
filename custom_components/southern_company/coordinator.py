@@ -30,6 +30,21 @@ from .const import DOMAIN
 _LOGGER = logging.getLogger(__name__)
 
 
+def series_is_hourly(rows: list[dict]) -> bool:
+    """True when stored rows are spaced under a day apart.
+
+    statistics_during_period(..., "hour") returns rows for a daily series too (one
+    per day), so "any rows" can't tell the two apart; the spacing between rows can.
+    """
+    starts = sorted(
+        r["start"].timestamp() if isinstance(r["start"], datetime.datetime) else float(r["start"])
+        for r in rows
+    )
+    if len(starts) < 2:
+        return False
+    return min(b - a for a, b in zip(starts, starts[1:])) < 23 * 3600
+
+
 class SouthernCompanyCoordinator(DataUpdateCoordinator):
     """Handle Southern company data and insert statistics."""
 
@@ -146,9 +161,7 @@ class SouthernCompanyCoordinator(DataUpdateCoordinator):
                     None,
                     {"sum"},
                 )
-                is_hourly = bool(
-                    cost_statistic_id in check_stat and check_stat[cost_statistic_id]
-                )
+                is_hourly = series_is_hourly(check_stat.get(cost_statistic_id) or [])
 
                 if is_hourly:
                     try:
