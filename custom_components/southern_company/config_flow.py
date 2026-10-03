@@ -6,14 +6,14 @@ from collections.abc import Mapping
 import logging
 from typing import Any
 
-from southern_company_api.exceptions import (
+from ._vendor.southern_company_api.exceptions import (
     CantReachSouthernCompany,
     EmailValidationRequired,
     InvalidLogin,
     NoRequestTokenFound,
     NoScTokenFound,
 )
-from southern_company_api.parser import SouthernCompanyAPI
+from ._vendor.southern_company_api.parser import SouthernCompanyAPI
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -69,7 +69,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         account_type = user_input.get(CONF_ACCOUNT_TYPE, ACCOUNT_TYPE_SOUTHERN_COMPANY)
 
         if account_type == ACCOUNT_TYPE_NICOR_GAS:
-            from southern_company_api.nicor_parser import NicorGasAPI  # noqa: PLC0415
+            from ._vendor.southern_company_api.nicor_parser import NicorGasAPI  # noqa: PLC0415
 
             api = NicorGasAPI(
                 user_input[CONF_USERNAME],
@@ -186,4 +186,34 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
         return self.async_show_form(
             step_id="reauth_confirm", data_schema=data_schema, errors=errors
+        )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Change the credentials of an existing entry in place."""
+        entry = self._get_reconfigure_entry()
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            if user_input[CONF_USERNAME] != entry.data[CONF_USERNAME]:
+                self._async_abort_entries_match(
+                    {CONF_USERNAME: user_input[CONF_USERNAME]}
+                )
+            await self._try_authenticate(user_input, errors)
+            if not errors:
+                return self.async_update_reload_and_abort(
+                    entry, data_updates=user_input
+                )
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=self.add_suggested_values_to_schema(
+                STEP_USER_DATA_SCHEMA,
+                {
+                    CONF_USERNAME: entry.data[CONF_USERNAME],
+                    CONF_ACCOUNT_TYPE: entry.data.get(
+                        CONF_ACCOUNT_TYPE, ACCOUNT_TYPE_SOUTHERN_COMPANY
+                    ),
+                },
+            ),
+            errors=errors,
         )

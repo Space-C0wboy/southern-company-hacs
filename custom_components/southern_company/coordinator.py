@@ -8,11 +8,11 @@ from datetime import timedelta
 import logging
 from typing import TYPE_CHECKING
 
-import southern_company_api
-from southern_company_api.exceptions import SouthernCompanyException
+from ._vendor import southern_company_api
+from ._vendor.southern_company_api.exceptions import SouthernCompanyException
 
 if TYPE_CHECKING:
-    from southern_company_api.nicor_parser import NicorGasAPI
+    from ._vendor.southern_company_api.nicor_parser import NicorGasAPI
 
 from homeassistant.components.recorder import get_instance
 from homeassistant.components.recorder.models import StatisticData, StatisticMetaData

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import datetime
 from typing import Any
 
-import southern_company_api
+from ._vendor import southern_company_api
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,

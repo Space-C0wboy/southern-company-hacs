@@ -1,3 +1,23 @@
+> ## About this fork
+>
+> This is a fork of [Southern-Company-HA/southern-company-hacs](https://github.com/Southern-Company-HA/southern-company-hacs)
+> that works again for Alabama Power / Georgia Power after Southern Company's
+> September 2026 API changes ([upstream #141](https://github.com/Southern-Company-HA/southern-company-hacs/issues/141)).
+>
+> - Bundles the unreleased Ascend-API library fix
+>   ([southern_company_api#24](https://github.com/Southern-Company-HA/southern_company_api/pull/24))
+>   under `custom_components/southern_company/_vendor/` — see the README there.
+> - Adds a **Reconfigure** option to change the username/password without
+>   deleting the integration.
+>
+> **Install:** in HACS remove the upstream "Southern Company HACS" repository,
+> add `https://github.com/Space-C0wboy/southern-company-hacs` as a custom
+> repository (category: Integration), install the latest release and restart.
+> Your existing config entry and statistics are kept.
+>
+> **Switch back** to upstream once it publishes a release containing the
+> Ascend fix.
+
 # Southern Company HACS
 
 [![GitHub Release][releases-shield]][releases]
