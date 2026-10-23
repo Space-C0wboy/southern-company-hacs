@@ -24,6 +24,7 @@ from homeassistant.components.recorder.statistics import (
 from homeassistant.const import CURRENCY_DOLLAR, UnitOfEnergy
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
 
@@ -43,6 +44,20 @@ def series_is_hourly(rows: list[dict]) -> bool:
     if len(starts) < 2:
         return False
     return min(b - a for a, b in zip(starts, starts[1:])) < 23 * 3600
+
+
+def daily_start(date: datetime.datetime) -> datetime.datetime:
+    """Local midnight of a usage day; SoCo's daily labels carry no timezone."""
+    if date.tzinfo is None:
+        date = date.replace(tzinfo=dt_util.get_default_time_zone())
+    return date.replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def starts_at_local_midnight(start: datetime.datetime | float) -> bool:
+    """False for daily rows stamped at UTC midnight by earlier versions (issue #146)."""
+    ts = start.timestamp() if isinstance(start, datetime.datetime) else float(start)
+    local = dt_util.as_local(dt_util.utc_from_timestamp(ts))
+    return local.hour == 0 and local.minute == 0
 
 
 class SouthernCompanyCoordinator(DataUpdateCoordinator):
@@ -211,7 +226,7 @@ class SouthernCompanyCoordinator(DataUpdateCoordinator):
                         continue
 
                     hourly_data = []
-                    from_time = daily_data[0].date
+                    from_time = daily_start(daily_data[0].date)
                     period = "day"
                     start_offset = timedelta(days=1)
 
@@ -248,11 +263,25 @@ class SouthernCompanyCoordinator(DataUpdateCoordinator):
                     usage_stat[usage_statistic_id]
                 )
 
-                if not has_cost_baseline or not has_usage_baseline:
+                realign = not is_hourly and not starts_at_local_midnight(
+                    last_stats[usage_statistic_id][0]["start"]
+                )
+                if realign:
+                    # New rows would land beside the old ones and count a day twice.
+                    _LOGGER.warning(
+                        "Daily statistics for account %s are not at local midnight. "
+                        "Clearing and rebuilding history...",
+                        account.number,
+                    )
+                    get_instance(self.hass).async_clear_statistics(
+                        [cost_statistic_id, usage_statistic_id]
+                    )
+                elif not has_cost_baseline or not has_usage_baseline:
                     _LOGGER.warning(
                         "Missing baseline statistics for account %s. Rebuilding history...",
                         account.number,
                     )
+                if realign or not has_cost_baseline or not has_usage_baseline:
                     if is_hourly:
                         try:
                             hourly_data = await account.get_hourly_data(
@@ -318,15 +347,13 @@ class SouthernCompanyCoordinator(DataUpdateCoordinator):
                 from_time = data.time if is_hourly else data.date
                 if from_time is None:
                     continue
-                # Normalize timezone to UTC and align start time to boundary
-                if from_time.tzinfo is None:
-                    from_time = from_time.replace(tzinfo=datetime.timezone.utc)
+                # Normalize timezone and align start time to boundary
                 if is_hourly:
+                    if from_time.tzinfo is None:
+                        from_time = from_time.replace(tzinfo=datetime.timezone.utc)
                     from_time = from_time.replace(minute=0, second=0, microsecond=0)
                 else:
-                    from_time = from_time.replace(
-                        hour=0, minute=0, second=0, microsecond=0
-                    )
+                    from_time = daily_start(from_time)
 
                 if (
                     last_stats_time is not None
