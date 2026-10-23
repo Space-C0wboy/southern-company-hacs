@@ -1,4 +1,5 @@
 """Daily rows are stamped at local midnight, and old UTC-midnight rows are rebuilt (issue #146)."""
+
 from datetime import datetime, timedelta
 from types import SimpleNamespace
 
@@ -64,7 +65,14 @@ async def _run(hass, coordinator):
 async def _rows(hass, statistic_id):
     start = dt_util.utcnow() - timedelta(days=60)
     stats = await get_instance(hass).async_add_executor_job(
-        statistics_during_period, hass, start, None, {statistic_id}, "hour", None, {"sum", "state"}
+        statistics_during_period,
+        hass,
+        start,
+        None,
+        {statistic_id},
+        "hour",
+        None,
+        {"sum", "state"},
     )
     return stats.get(statistic_id, [])
 
