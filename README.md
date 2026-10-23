@@ -34,6 +34,8 @@
 | Higher projected monthly cost   | Upper estimate of monthly bill             |
 | Lower projected monthly cost    | Lower estimate of monthly bill             |
 
+Usage and cost history is also imported as long-term statistics (`southern_company:energy_usage_<account>` and `southern_company:energy_cost_<account>`) for the Energy dashboard. Daily data starts at local midnight in Home Assistant's time zone. Earlier versions put daily rows at UTC midnight, which shows each day in the evening before; after upgrading, the first update clears that history and imports it again once.
+
 ### Nicor Gas (LDC 7)
 
 | Sensor                   | Description                                   |
@@ -95,7 +97,7 @@ To change the username or password later, open the integration and choose **Reco
 
 ### Running the tests
 
-The config-flow tests run in Docker (Home Assistant's test harness needs Python 3.14):
+The tests run in Docker (Home Assistant's test harness needs Python 3.14):
 
 ```console
 $ bash scripts/test.sh
