@@ -4,10 +4,17 @@ on:
     branches:
       - main
       - master
+
+permissions:
+  contents: read
+
 jobs:
   draft_release:
     name: Release Drafter
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Run release-drafter
         uses: release-drafter/release-drafter@v6.0.0
