@@ -1,4 +1,5 @@
 """Daily rows are stamped at local midnight, and old UTC-midnight rows are rebuilt (issue #146)."""
+
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
@@ -64,7 +65,14 @@ async def _run(hass, coordinator):
 async def _rows(hass, statistic_id):
     start = dt_util.utcnow() - timedelta(days=60)
     stats = await get_instance(hass).async_add_executor_job(
-        statistics_during_period, hass, start, None, {statistic_id}, "hour", None, {"sum", "state"}
+        statistics_during_period,
+        hass,
+        start,
+        None,
+        {statistic_id},
+        "hour",
+        None,
+        {"sum", "state"},
     )
     return stats.get(statistic_id, [])
 
@@ -93,7 +101,9 @@ async def test_utc_midnight_history_is_rebuilt_without_double_counting(hass):
     await hass.config.async_set_time_zone("America/Chicago")
     # 00:00 UTC is 19:00 under CDT and 18:00 under CST; derive it per day so DST can't break this.
     utc_midnights = {
-        dt_util.as_local(datetime(d.date.year, d.date.month, d.date.day, tzinfo=UTC)).hour
+        dt_util.as_local(
+            datetime(d.date.year, d.date.month, d.date.day, tzinfo=UTC)
+        ).hour
         for d in days
     }
     assert _local_hours(await _rows(hass, USAGE_ID)) == utc_midnights

@@ -38,7 +38,9 @@ def series_is_hourly(rows: list[dict]) -> bool:
     per day), so "any rows" can't tell the two apart; the spacing between rows can.
     """
     starts = sorted(
-        r["start"].timestamp() if isinstance(r["start"], datetime.datetime) else float(r["start"])
+        r["start"].timestamp()
+        if isinstance(r["start"], datetime.datetime)
+        else float(r["start"])
         for r in rows
     )
     if len(starts) < 2:
