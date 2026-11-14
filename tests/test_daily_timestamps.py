@@ -1,5 +1,5 @@
 """Daily rows are stamped at local midnight, and old UTC-midnight rows are rebuilt (issue #146)."""
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 from homeassistant.components.recorder import get_instance
@@ -91,7 +91,12 @@ async def test_utc_midnight_history_is_rebuilt_without_double_counting(hass):
     await hass.config.async_set_time_zone("UTC")
     await _run(hass, coordinator)
     await hass.config.async_set_time_zone("America/Chicago")
-    assert _local_hours(await _rows(hass, USAGE_ID)) == {19}
+    # 00:00 UTC is 19:00 under CDT and 18:00 under CST; derive it per day so DST can't break this.
+    utc_midnights = {
+        dt_util.as_local(datetime(d.date.year, d.date.month, d.date.day, tzinfo=UTC)).hour
+        for d in days
+    }
+    assert _local_hours(await _rows(hass, USAGE_ID)) == utc_midnights
 
     await _run(hass, coordinator)
 
